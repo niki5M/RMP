@@ -32,109 +32,161 @@ class _FilterScreenState extends State<FilterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacementNamed('/edit');
-          },
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 30),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/edit'),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+        ),
+        title: const Text(
+          'Фильтры',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: () async {
-                Uint8List? bytes = await screenshotController.capture();
-                imageProvider.changeImage(bytes!);
-                if (!mounted) {
-                  return;
+              final bytes = await screenshotController.capture();
+              if (bytes != null) {
+                imageProvider.changeImage(bytes);
+                if (mounted) {
+                  Navigator.of(context).pushReplacementNamed('/edit');
                 }
-
-                Navigator.of(context).pushReplacementNamed('/edit');
-                print('Экран закрыт успешно.');
+              }
             },
-            icon: Icon(Icons.check, size: 30, color: Colors.white),
-          )
+            icon: const Icon(Icons.check, size: 24, color: Colors.black),
+          ),
         ],
       ),
-      body: Center(
-        child: Consumer<AppImageProvider>(
-          builder: (BuildContext context, AppImageProvider value, Widget? child) {
-            if (value.currentImage != null) {
-              return Screenshot(
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.matrix(currentFilter.matrix),
-                    child: Image.memory(value.currentImage!),
-                  ),
-                  controller: screenshotController);
-            }
-            return const Center(child: CircularProgressIndicator());
-          },
-        ),
-      ),
-      bottomNavigationBar: Container(
-        width: double.infinity,
-        height: 150,
-        padding: EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.black87,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: SafeArea(
-          child: Consumer<AppImageProvider>(
-            builder: (BuildContext context, AppImageProvider value, Widget? child) {
-              return ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: filters.length,
-                padding: EdgeInsets.symmetric(horizontal: 10),
-                itemBuilder: (BuildContext context, int index) {
-                  Filter filter = filters[index];
-                  bool isSelected = filter == currentFilter;
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<AppImageProvider>(
+                builder: (context, value, child) {
+                  if (value.currentImage == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        currentFilter = filter;
-                      });
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8),
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: isSelected
-                                ? Border.all(color: Colors.blueAccent, width: 3)
-                                : null,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: ColorFiltered(
-                              colorFilter: ColorFilter.matrix(filter.matrix),
-                              child: value.currentImage != null
-                                  ? Image.memory(value.currentImage!, fit: BoxFit.cover)
-                                  : Container(color: Colors.grey),
-                            ),
+                  return Screenshot(
+                    controller: screenshotController,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: ColorFiltered(
+                          colorFilter: ColorFilter.matrix(currentFilter.matrix),
+                          child: Image.memory(
+                            value.currentImage!,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          'aaa',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isSelected ? Colors.blueAccent : Colors.white,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        )
-                      ],
+                      ),
                     ),
                   );
                 },
-              );
-            },
+              ),
+            ),
           ),
+          _buildFilterSelector(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterSelector() {
+    return Container(
+      height: 150,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Consumer<AppImageProvider>(
+          builder: (context, value, child) {
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: filters.length,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemBuilder: (context, index) {
+                final filter = filters[index];
+                return _buildFilterItem(
+                  filter: filter,
+                  isSelected: filter == currentFilter,
+                  image: value.currentImage,
+                  onTap: () => setState(() => currentFilter = filter),
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterItem({
+    required Filter filter,
+    required bool isSelected,
+    required Uint8List? image,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+                border: isSelected
+                    ? Border.all(color: Colors.blue, width: 2)
+                    : null,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.matrix(filter.matrix),
+                  child: image != null
+                      ? Image.memory(image, fit: BoxFit.cover)
+                      : const SizedBox(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              filter.filterName,
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected ? Colors.blue : Colors.black,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

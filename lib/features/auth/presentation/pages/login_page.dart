@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
             Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/sign.png'),
+                  image: AssetImage('assets/images/login.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 listener: (context, state) {
                   if (state is AuthFailure) {
                     showSnackBar(context, state.message);
-                  } else if (state is AuthSuccess) { // Должно быть AuthSuccess
+                  } else if (state is AuthSuccess) {
                     Navigator.pushAndRemoveUntil(
                       context,
                       HomePage.route(),
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                         const Text(
                           'Sign In',
                           style: TextStyle(
-                            color: Palete.whiteColor,
+                            color: Palete.greyBlackColor,
                             fontSize: 50,
                             fontWeight: FontWeight.bold,
                           ),

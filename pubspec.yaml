@@ -43,6 +43,8 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   lindi_sticker_widget: ^1.0.3
   text_editor: ^0.7.0
+  permission_handler: ^12.0.0+1
+  image_gallery_saver: ^2.0.3
 
   flutter_bloc: ^9.1.0
   fpdart: ^1.1.1

@@ -15,7 +15,7 @@ import 'package:testik2/screens/home_page.dart';
 import 'package:testik2/providers/image_provider.dart';
 import 'package:testik2/screens/sticker_screen.dart';
 import 'package:testik2/screens/text_screen.dart';
-import 'package:testik2/screens/tint_screen.dart'; // добавь это
+import 'package:testik2/screens/tint_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +24,7 @@ void main() async {
     MultiProvider(
       providers: [
         BlocProvider(create: (_) => serviceLocator<AuthBloc>()),
-        ChangeNotifierProvider(create: (_) => AppImageProvider()), // ВАЖНО добавить это
+        ChangeNotifierProvider(create: (_) => AppImageProvider()),
       ],
       child: const MyApp(),
     ),
@@ -60,96 +60,3 @@ class MyApp extends StatelessWidget {
 
 
 
-
-
-
-
-
-
-
-
-
-class Building extends StatelessWidget {
-  const Building({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Color(0xff0D1313),
-        extendBodyBehindAppBar: true, 
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-        ),
-        body: home(context),
-      ),
-    );
-  }
-}
-
-Widget home(BuildContext context) {
-  return Stack(
-    children: [
-      Container(
-        width: double.infinity,
-        height: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/Group1.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 30), //MediaQuery.of(context).size.width
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Image(image: AssetImage('assets/images/PhotoArt.png')),
-                SizedBox(width: 15,),
-                IconButton(onPressed: (){}, icon: Icon(Icons.person_pin, size: 40,), color: Colors.white, )
-              ],
-            ),
-            SizedBox(height: 200),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(onPressed: (){},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-
-                    ),
-
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Icon(Icons.ac_unit),
-                        Text('Редактировать'),
-                      ],
-                    ) ),
-                ElevatedButton(onPressed: (){},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      minimumSize: Size(100, 50),
-                    ),
-
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Icon(Icons.access_time_filled),
-                        Text('Камера'),
-                      ],
-                    ) ),
-              ],
-            ),
-
-          ],
-        ),
-      ),
-    ],
-  );
-}

@@ -16,7 +16,6 @@ class AdjustScreen extends StatefulWidget {
 }
 
 class _AdjustScreenState extends State<AdjustScreen> {
-
   double brightness = 0;
   double contrast = 0;
   double saturation = 0;
@@ -27,25 +26,21 @@ class _AdjustScreenState extends State<AdjustScreen> {
   bool showContrast = false;
   bool showSaturation = false;
   bool showHue = false;
-  bool showSepia = false ;
+  bool showSepia = false;
 
   late ColorFilterGenerator adj;
-
-
   late AppImageProvider imageProvider;
   ScreenshotController screenshotController = ScreenshotController();
 
-  showSlider({b, c, s, h, se}){
+  void showSlider({bool? b, bool? c, bool? s, bool? h, bool? se}) {
     setState(() {
-      showBrightness = b != null ? true : false;
-      showContrast = c != null ? true : false;
-      showSaturation = s != null ? true : false;
-      showHue = h != null ? true : false;
-      showSepia = se != null ? true : false;
+      showBrightness = b ?? false;
+      showContrast = c ?? false;
+      showSaturation = s ?? false;
+      showHue = h ?? false;
+      showSepia = se ?? false;
     });
-
   }
-
 
   @override
   void initState() {
@@ -54,223 +49,295 @@ class _AdjustScreenState extends State<AdjustScreen> {
     super.initState();
   }
 
-  adjust({b, c, s, h, se}){
+  void adjust({double? b, double? c, double? s, double? h, double? se}) {
     adj = ColorFilterGenerator(
-        name: 'Adjust',
-        filters: [
-          ColorFilterAddons.brightness(b ?? brightness),
-          ColorFilterAddons.contrast(c ?? contrast),
-          ColorFilterAddons.saturation(s ?? saturation),
-          ColorFilterAddons.hue(h ?? hue),
-          ColorFilterAddons.sepia(se ?? sepia),
-
-    ]);
+      name: 'Adjust',
+      filters: [
+        ColorFilterAddons.brightness(b ?? brightness),
+        ColorFilterAddons.contrast(c ?? contrast),
+        ColorFilterAddons.saturation(s ?? saturation),
+        ColorFilterAddons.hue(h ?? hue),
+        ColorFilterAddons.sepia(se ?? sepia),
+      ],
+    );
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacementNamed('/edit');
-          },
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 30),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/edit'),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+        ),
+        title: const Text(
+          'Коррекция',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: () async {
-              Uint8List? bytes = await screenshotController.capture();
-              imageProvider.changeImage(bytes!);
-              if (!mounted) {
-                return;
+              final bytes = await screenshotController.capture();
+              if (bytes != null) {
+                imageProvider.changeImage(bytes);
+                if (mounted) {
+                  Navigator.of(context).pushReplacementNamed('/edit');
+                }
               }
-              Navigator.of(context).pushReplacementNamed('/edit');
             },
-            icon: Icon(Icons.check, size: 30, color: Colors.white),
-          )
+            icon: const Icon(Icons.check, size: 24, color: Colors.black),
+          ),
         ],
       ),
-      body: Stack(
+      backgroundColor: Colors.white,
+      body: Column(
         children: [
-          Center(
-            child: Consumer<AppImageProvider>(
-              builder: (BuildContext context, AppImageProvider value, Widget? child) {
-                if (value.currentImage != null) {
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Consumer<AppImageProvider>(
+                builder: (context, value, child) {
+                  if (value.currentImage == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   return Screenshot(
-                      child: ColorFiltered(
-                        colorFilter: ColorFilter.matrix(adj.matrix),
-                        child: Image.memory(value.currentImage!,fit: BoxFit.contain),),
-                      controller: screenshotController);
-                }
-                return const Center(child: CircularProgressIndicator());
+                    controller: screenshotController,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: ColorFiltered(
+                          colorFilter: ColorFilter.matrix(adj.matrix),
+                          child: Image.memory(
+                            value.currentImage!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          _buildAdjustmentControls(),
+          _buildAdjustmentTools(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdjustmentControls() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          if (showBrightness)
+            _buildAdjustmentSlider(
+              value: brightness,
+              label: 'Brightness',
+              onChanged: (value) {
+                setState(() {
+                  brightness = value;
+                  adjust(b: brightness);
+                });
               },
             ),
-          ),
-          Align(
-            alignment:  Alignment.bottomCenter,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Visibility(
-                        visible:showBrightness,
-                        child: slider(brightness, (value){
-                          setState(() {
-                            brightness = value;
-                            adjust(b: brightness);
-                          });
-                        }),
-                      ),
-                      Visibility(
-                        visible:showContrast,
-                        child: slider(contrast, (value){
-                          setState(() {
-                            contrast = value;
-                            adjust(c: contrast);
-                          });
-                        }),
-                      ),
-                      Visibility(
-                        visible:showSaturation,
-                        child: slider(saturation, (value){
-                          setState(() {
-                            saturation = value;
-                            adjust(s: saturation);
-                          });
-                        }),
-                      ),
-                      Visibility(
-                        visible:showHue,
-                        child: slider(hue, (value){
-                          setState(() {
-                            hue = value;
-                            adjust(h: hue);
-                          });
-                        }),
-                      ),
-                      Visibility(
-                        visible:showSepia,
-                        child: slider(sepia, (value){
-                          setState(() {
-                            sepia = value;
-                            adjust(se: sepia);
-                          });
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(
-                  child: Text('Reset',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),),
-                  onPressed: (){
-                    setState(() {
-                      brightness = 0;
-                      contrast = 0;
-                      saturation = 0;
-                      hue = 0;
-                      sepia = 0;
-                      adjust(
-                        b: brightness,
-                        c: contrast,
-                        s: saturation,
-                        h: hue,
-                        se: sepia,
-                      );
-                    });
-                  },
-                ),
-              ],
+          if (showContrast)
+            _buildAdjustmentSlider(
+              value: contrast,
+              label: 'Contrast',
+              onChanged: (value) {
+                setState(() {
+                  contrast = value;
+                  adjust(c: contrast);
+                });
+              },
             ),
-          )
-
+          if (showSaturation)
+            _buildAdjustmentSlider(
+              value: saturation,
+              label: 'Saturation',
+              onChanged: (value) {
+                setState(() {
+                  saturation = value;
+                  adjust(s: saturation);
+                });
+              },
+            ),
+          if (showHue)
+            _buildAdjustmentSlider(
+              value: hue,
+              label: 'Hue',
+              onChanged: (value) {
+                setState(() {
+                  hue = value;
+                  adjust(h: hue);
+                });
+              },
+            ),
+          if (showSepia)
+            _buildAdjustmentSlider(
+              value: sepia,
+              label: 'Sepia',
+              onChanged: (value) {
+                setState(() {
+                  sepia = value;
+                  adjust(se: sepia);
+                });
+              },
+            ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                brightness = 0;
+                contrast = 0;
+                saturation = 0;
+                hue = 0;
+                sepia = 0;
+                adjust(
+                  b: brightness,
+                  c: contrast,
+                  s: saturation,
+                  h: hue,
+                  se: sepia,
+                );
+              });
+            },
+            child: const Text(
+              'Сбросить',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: Container(
-        width: double.infinity,
-        height: 110,
-        color: Colors.black87,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
+    );
+  }
 
-            children: [
-              _bottomButItem(
-                  'assets/icons/brightness_button.png',
-                  'Brightness',
-                  onPress: (){
-                    showSlider(b: true);
-                  }
-              ),
-              _bottomButItem(
-                  'assets/icons/contrast_button.png',
-                  'Contrast',
-                  onPress: (){
-                    showSlider(c: true);
-                  }
-              ),
-              _bottomButItem(
-                  'assets/icons/saturation_button.png',
-                  'Saturation',
-                  onPress: (){
-                    showSlider(s: true);
-                  }
-              ),
-              _bottomButItem(
-                  'assets/icons/hue_button.png',
-                  'Hue',
-                  onPress: (){
-                    showSlider(h: true);
-                  }
-              ),
-              _bottomButItem(
-                  'assets/icons/sepia_button.png',
-                  'Sepia',
-                  onPress: (){
-                    showSlider(se: true);
-                  }
-              ),
-
-            ],
+  Widget _buildAdjustmentSlider({
+    required double value,
+    required String label,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black,
           ),
+        ),
+        Slider(
+          value: value,
+          min: -0.9,
+          max: 1,
+          divisions: 19,
+          label: value.toStringAsFixed(2),
+          onChanged: onChanged,
+          activeColor: Colors.black87,
+          inactiveColor: Colors.grey[300],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdjustmentTools() {
+    return Container(
+      height: 150,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            const SizedBox(width: 16),
+            _buildAdjustmentButton(
+              icon: Icons.brightness_6,
+              label: 'Brightness',
+              onPressed: () => showSlider(b: true),
+            ),
+            _buildAdjustmentButton(
+              icon: Icons.contrast,
+              label: 'Contrast',
+              onPressed: () => showSlider(c: true),
+            ),
+            _buildAdjustmentButton(
+              icon: Icons.color_lens,
+              label: 'Saturation',
+              onPressed: () => showSlider(s: true),
+            ),
+            _buildAdjustmentButton(
+              icon: Icons.palette,
+              label: 'Hue',
+              onPressed: () => showSlider(h: true),
+            ),
+            _buildAdjustmentButton(
+              icon: Icons.invert_colors,
+              label: 'Sepia',
+              onPressed: () => showSlider(se: true),
+            ),
+            const SizedBox(width: 16),
+          ],
         ),
       ),
     );
   }
-  Widget _bottomButItem(String imagePath, String title, {required onPress}){
-    return InkWell(
-      onTap: onPress,
-      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              imagePath,
-              width: 40,
-              height: 40,
-              color: Colors.white,
+
+  Widget _buildAdjustmentButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(12),
             ),
-            SizedBox(height: 5,),
-            Text(title, style: TextStyle(color: Colors.white),),
-          ],
-        ),),
+            child: IconButton(
+              icon: Icon(icon, color: Colors.black),
+              onPressed: onPressed,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
     );
   }
-
-  Widget slider( value, onChanged){
-    return Slider(
-        label: '${value.toStringAsFixed(2)}',
-        value: value,
-        max: 1,
-        min: -0.9,
-        onChanged: onChanged
-    );
-  }
-
 }

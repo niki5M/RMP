@@ -13,17 +13,17 @@ class AuthButton extends StatelessWidget {
       child: Text(
         buttonText,
         style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
       ),
       style: ElevatedButton.styleFrom(
         fixedSize: const Size(395, 55),
         side: BorderSide(
-          color: Palete.primaryOrange.withOpacity(0.4),
+          color: Palete.primaryOrange,
           width: 2,
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color(0xffF2F2F2),
         foregroundColor: Palete.primaryOrange,
       ),
     );

@@ -11,6 +11,7 @@ import 'package:testik2/features/auth/presentation/pages/login_page.dart';
 
 import '../../helper/image_picker.dart';
 import '../../providers/image_provider.dart';
+import '../core/theme/colors.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -55,7 +56,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0D1313),
+      // backgroundColor: const Color(0xff0D1313),
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           if (state is AuthSuccess) {
@@ -67,7 +68,7 @@ class _HomePageState extends State<HomePage> {
                   height: double.infinity,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('assets/images/mmain.png'),
+                      image: AssetImage('assets/images/first.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -78,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                   top: 40,
                   right: 20,
                   child: IconButton(
-                    icon: const Icon(Icons.logout, color: Colors.white, size: 30),
+                    icon: const Icon(Icons.logout, color: Colors.black, size: 40),
                     onPressed: () {
                       context.read<AuthBloc>().add(AuthLogout());
                       Navigator.pushAndRemoveUntil(
@@ -126,9 +127,9 @@ class _HomePageState extends State<HomePage> {
 
         style: ElevatedButton.styleFrom(
           fixedSize: const Size(175, 45),
-          side: const BorderSide(color: Colors.white, width: 1),
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
+          side: const BorderSide(color: Palete.blackColor, width: 1),
+          backgroundColor: Color(0xffF2F2F2),
+          foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -138,7 +139,7 @@ class _HomePageState extends State<HomePage> {
           label,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w400,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

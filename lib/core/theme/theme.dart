@@ -11,7 +11,7 @@ class AppTheme{
     borderRadius: BorderRadius.circular(15),
   );
 
-  static final darkThemeMode = ThemeData.dark().copyWith(
+  static final darkThemeMode = ThemeData.light().copyWith(
     scaffoldBackgroundColor: Palete.background,
     appBarTheme: AppBarTheme(
       backgroundColor: Palete.background,

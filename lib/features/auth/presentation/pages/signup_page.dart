@@ -44,7 +44,7 @@ class _SignUpPageState extends State<SignUpPage> {
             Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/sign.png'),
+                  image: AssetImage('assets/images/login.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -76,7 +76,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         const Text(
                           'Sign Up',
                           style: TextStyle(
-                              color: Palete.whiteColor,
+                              color: Palete.greyBlackColor,
                               fontSize: 50,
                               fontWeight: FontWeight.bold),
                         ),
