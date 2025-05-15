@@ -2,9 +2,9 @@ import 'package:fpdart/src/either.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:testik2/core/error/exception.dart';
 import 'package:testik2/core/error/failures.dart';
-import 'package:testik2/features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repository/auth_repository.dart';
+import '../datasources/auth_remote_data_source.dart';
 
 class AuthRepositoryImpl implements AuthRepository{
   final AuthRemoteDataSource remoteDataSource;

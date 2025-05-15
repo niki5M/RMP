@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../providers/image_provider.dart';
+import '../core/theme/theme.dart'; // Import ThemeProvider
 
 class AdjustScreen extends StatefulWidget {
   const AdjustScreen({super.key});
@@ -64,19 +65,30 @@ class _AdjustScreenState extends State<AdjustScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDark;
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final iconColor = isDark ? Colors.white : Colors.black;
+    final toolbarColor = isDark ? Colors.grey[900]! : Colors.white;
+    final buttonColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
+    final sliderActiveColor = isDark ? Colors.white : Colors.black;
+    final sliderInactiveColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+    final resetTextColor = isDark ? Colors.grey[400]! : Colors.grey;
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pushReplacementNamed('/edit'),
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+          icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 24),
         ),
-        title: const Text(
+        title: Text(
           'Коррекция',
           style: TextStyle(
             fontSize: 24,
-            color: Colors.black,
+            color: textColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -91,11 +103,11 @@ class _AdjustScreenState extends State<AdjustScreen> {
                 }
               }
             },
-            icon: const Icon(Icons.check, size: 24, color: Colors.black),
+            icon: Icon(Icons.check, size: 24, color: iconColor),
           ),
         ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: Column(
         children: [
           Expanded(
@@ -104,14 +116,17 @@ class _AdjustScreenState extends State<AdjustScreen> {
               child: Consumer<AppImageProvider>(
                 builder: (context, value, child) {
                   if (value.currentImage == null) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: iconColor,
+                      ),
+                    );
                   }
                   return Screenshot(
                     controller: screenshotController,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
@@ -129,14 +144,29 @@ class _AdjustScreenState extends State<AdjustScreen> {
               ),
             ),
           ),
-          _buildAdjustmentControls(),
-          _buildAdjustmentTools(),
+          _buildAdjustmentControls(
+            textColor: textColor,
+            sliderActiveColor: sliderActiveColor,
+            sliderInactiveColor: sliderInactiveColor,
+            resetTextColor: resetTextColor,
+          ),
+          _buildAdjustmentTools(
+            toolbarColor: toolbarColor,
+            buttonColor: buttonColor,
+            iconColor: iconColor,
+            textColor: textColor,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAdjustmentControls() {
+  Widget _buildAdjustmentControls({
+    required Color textColor,
+    required Color sliderActiveColor,
+    required Color sliderInactiveColor,
+    required Color resetTextColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -144,57 +174,72 @@ class _AdjustScreenState extends State<AdjustScreen> {
           if (showBrightness)
             _buildAdjustmentSlider(
               value: brightness,
-              label: 'Brightness',
+              label: 'Яркость',
               onChanged: (value) {
                 setState(() {
                   brightness = value;
                   adjust(b: brightness);
                 });
               },
+              textColor: textColor,
+              sliderActiveColor: sliderActiveColor,
+              sliderInactiveColor: sliderInactiveColor,
             ),
           if (showContrast)
             _buildAdjustmentSlider(
               value: contrast,
-              label: 'Contrast',
+              label: 'Контраст',
               onChanged: (value) {
                 setState(() {
                   contrast = value;
                   adjust(c: contrast);
                 });
               },
+              textColor: textColor,
+              sliderActiveColor: sliderActiveColor,
+              sliderInactiveColor: sliderInactiveColor,
             ),
           if (showSaturation)
             _buildAdjustmentSlider(
               value: saturation,
-              label: 'Saturation',
+              label: 'Насыщенность',
               onChanged: (value) {
                 setState(() {
                   saturation = value;
                   adjust(s: saturation);
                 });
               },
+              textColor: textColor,
+              sliderActiveColor: sliderActiveColor,
+              sliderInactiveColor: sliderInactiveColor,
             ),
           if (showHue)
             _buildAdjustmentSlider(
               value: hue,
-              label: 'Hue',
+              label: 'Оттенок',
               onChanged: (value) {
                 setState(() {
                   hue = value;
                   adjust(h: hue);
                 });
               },
+              textColor: textColor,
+              sliderActiveColor: sliderActiveColor,
+              sliderInactiveColor: sliderInactiveColor,
             ),
           if (showSepia)
             _buildAdjustmentSlider(
               value: sepia,
-              label: 'Sepia',
+              label: 'Сепия',
               onChanged: (value) {
                 setState(() {
                   sepia = value;
                   adjust(se: sepia);
                 });
               },
+              textColor: textColor,
+              sliderActiveColor: sliderActiveColor,
+              sliderInactiveColor: sliderInactiveColor,
             ),
           TextButton(
             onPressed: () {
@@ -213,9 +258,9 @@ class _AdjustScreenState extends State<AdjustScreen> {
                 );
               });
             },
-            child: const Text(
+            child: Text(
               'Сбросить',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(color: resetTextColor),
             ),
           ),
         ],
@@ -227,15 +272,18 @@ class _AdjustScreenState extends State<AdjustScreen> {
     required double value,
     required String label,
     required ValueChanged<double> onChanged,
+    required Color textColor,
+    required Color sliderActiveColor,
+    required Color sliderInactiveColor,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Colors.black,
+            color: textColor,
           ),
         ),
         Slider(
@@ -245,18 +293,23 @@ class _AdjustScreenState extends State<AdjustScreen> {
           divisions: 19,
           label: value.toStringAsFixed(2),
           onChanged: onChanged,
-          activeColor: Colors.black87,
-          inactiveColor: Colors.grey[300],
+          activeColor: sliderActiveColor,
+          inactiveColor: sliderInactiveColor,
         ),
       ],
     );
   }
 
-  Widget _buildAdjustmentTools() {
+  Widget _buildAdjustmentTools({
+    required Color toolbarColor,
+    required Color buttonColor,
+    required Color iconColor,
+    required Color textColor,
+  }) {
     return Container(
       height: 150,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: toolbarColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -276,28 +329,43 @@ class _AdjustScreenState extends State<AdjustScreen> {
             const SizedBox(width: 16),
             _buildAdjustmentButton(
               icon: Icons.brightness_6,
-              label: 'Brightness',
+              label: 'Яркость',
               onPressed: () => showSlider(b: true),
+              buttonColor: buttonColor,
+              iconColor: iconColor,
+              textColor: textColor,
             ),
             _buildAdjustmentButton(
               icon: Icons.contrast,
-              label: 'Contrast',
+              label: 'Контраст',
               onPressed: () => showSlider(c: true),
+              buttonColor: buttonColor,
+              iconColor: iconColor,
+              textColor: textColor,
             ),
             _buildAdjustmentButton(
               icon: Icons.color_lens,
-              label: 'Saturation',
+              label: 'Насыщенность',
               onPressed: () => showSlider(s: true),
+              buttonColor: buttonColor,
+              iconColor: iconColor,
+              textColor: textColor,
             ),
             _buildAdjustmentButton(
               icon: Icons.palette,
-              label: 'Hue',
+              label: 'Оттенок',
               onPressed: () => showSlider(h: true),
+              buttonColor: buttonColor,
+              iconColor: iconColor,
+              textColor: textColor,
             ),
             _buildAdjustmentButton(
               icon: Icons.invert_colors,
-              label: 'Sepia',
+              label: 'Сепия',
               onPressed: () => showSlider(se: true),
+              buttonColor: buttonColor,
+              iconColor: iconColor,
+              textColor: textColor,
             ),
             const SizedBox(width: 16),
           ],
@@ -310,6 +378,9 @@ class _AdjustScreenState extends State<AdjustScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
+    required Color buttonColor,
+    required Color iconColor,
+    required Color textColor,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -320,20 +391,20 @@ class _AdjustScreenState extends State<AdjustScreen> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: buttonColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: Icon(icon, color: Colors.black),
+              icon: Icon(icon, color: iconColor),
               onPressed: onPressed,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black,
+              color: textColor,
             ),
           ),
         ],

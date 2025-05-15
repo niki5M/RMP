@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:testik2/features/auth/domain/usecases/user_sign_up.dart';
 import '../../domain/usecases/user_login.dart';
+import '../../domain/usecases/user_sign_up.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -24,7 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     res.fold(
           (failure) => emit(AuthFailure(failure.message)),
-          (user) => emit(AuthSuccess(user)), // Изменено на AuthSuccess
+          (user) => emit(AuthSuccess(user)),
     );
   }
 

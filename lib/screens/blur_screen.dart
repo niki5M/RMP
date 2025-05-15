@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 import '../providers/image_provider.dart';
+import '../core/theme/theme.dart'; // Import ThemeProvider
 
 class BlurScreen extends StatefulWidget {
   const BlurScreen({super.key});
@@ -38,19 +38,28 @@ class _BlurScreenState extends State<BlurScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDark;
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final iconColor = isDark ? Colors.white : Colors.black;
+    final toolbarColor = isDark ? Colors.grey[900] : Colors.white;
+    final buttonColor = isDark ? Colors.grey[800] : Colors.grey[200];
+    final activeColor = isDark ? Colors.white : Colors.black;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black87, size: 24),
+          icon: Icon(Icons.close, color: iconColor, size: 24),
           onPressed: () => Navigator.of(context).pushReplacementNamed('/edit'),
         ),
-        title: const Text(
+        title: Text(
           'Размытие',
           style: TextStyle(
-            color: Colors.black87,
+            color: textColor,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -58,7 +67,7 @@ class _BlurScreenState extends State<BlurScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.check, color: Colors.black87, size: 24),
+            icon: Icon(Icons.check, color: iconColor, size: 24),
             onPressed: _saveChanges,
           ),
         ],
@@ -70,7 +79,7 @@ class _BlurScreenState extends State<BlurScreen> {
               child: Consumer<AppImageProvider>(
                 builder: (context, value, child) {
                   if (value.currentImage == null) {
-                    return const CircularProgressIndicator(color: Colors.black87);
+                    return CircularProgressIndicator(color: iconColor);
                   }
                   return Screenshot(
                     controller: screenshotController,
@@ -90,17 +99,27 @@ class _BlurScreenState extends State<BlurScreen> {
               ),
             ),
           ),
-          _buildControlsPanel(),
+          _buildControlsPanel(
+            toolbarColor: toolbarColor!,
+            textColor: textColor,
+            activeColor: activeColor,
+            buttonColor: buttonColor!,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildControlsPanel() {
+  Widget _buildControlsPanel({
+    required Color toolbarColor,
+    required Color textColor,
+    required Color activeColor,
+    required Color buttonColor,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: toolbarColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
@@ -114,29 +133,50 @@ class _BlurScreenState extends State<BlurScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildBlurSliders(),
+          _buildBlurSliders(textColor: textColor, activeColor: activeColor),
           const SizedBox(height: 16),
-          _buildTileModeSelector(),
+          _buildTileModeSelector(
+            textColor: textColor,
+            buttonColor: buttonColor,
+            activeColor: activeColor,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBlurSliders() {
+  Widget _buildBlurSliders({
+    required Color textColor,
+    required Color activeColor,
+  }) {
     return Column(
       children: [
-        _buildSlider('Горизонтальное размытие', sigmaX, (value) {
-          setState(() => sigmaX = value);
-        }),
+        _buildSlider(
+          'Горизонтальное размытие',
+          sigmaX,
+              (value) => setState(() => sigmaX = value),
+          textColor: textColor,
+          activeColor: activeColor,
+        ),
         const SizedBox(height: 12),
-        _buildSlider('Вертикальное размытие', sigmaY, (value) {
-          setState(() => sigmaY = value);
-        }),
+        _buildSlider(
+          'Вертикальное размытие',
+          sigmaY,
+              (value) => setState(() => sigmaY = value),
+          textColor: textColor,
+          activeColor: activeColor,
+        ),
       ],
     );
   }
 
-  Widget _buildSlider(String title, double value, ValueChanged<double> onChanged) {
+  Widget _buildSlider(
+      String title,
+      double value,
+      ValueChanged<double> onChanged, {
+        required Color textColor,
+        required Color activeColor,
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,16 +185,16 @@ class _BlurScreenState extends State<BlurScreen> {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.black87,
+              style: TextStyle(
+                color: textColor,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Text(
               value.toStringAsFixed(1),
-              style: const TextStyle(
-                color: Colors.black87,
+              style: TextStyle(
+                color: textColor,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -163,11 +203,11 @@ class _BlurScreenState extends State<BlurScreen> {
         ),
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
-            activeTrackColor: Colors.black87,
+            activeTrackColor: activeColor,
             inactiveTrackColor: Colors.grey[300],
             thumbColor: Colors.white,
-            overlayColor: Colors.black87.withOpacity(0.2),
-            valueIndicatorColor: Colors.black87,
+            overlayColor: activeColor.withOpacity(0.2),
+            valueIndicatorColor: activeColor,
             activeTickMarkColor: Colors.transparent,
             inactiveTickMarkColor: Colors.transparent,
             trackHeight: 2,
@@ -188,14 +228,18 @@ class _BlurScreenState extends State<BlurScreen> {
     );
   }
 
-  Widget _buildTileModeSelector() {
+  Widget _buildTileModeSelector({
+    required Color textColor,
+    required Color buttonColor,
+    required Color activeColor,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Edge Handling',
           style: TextStyle(
-            color: Colors.black87,
+            color: textColor,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -212,7 +256,7 @@ class _BlurScreenState extends State<BlurScreen> {
                   label: Text(
                     _getTileModeName(mode),
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected ? Colors.white : textColor,
                       fontSize: 12,
                     ),
                   ),
@@ -220,12 +264,12 @@ class _BlurScreenState extends State<BlurScreen> {
                   onSelected: (selected) {
                     setState(() => tileMode = mode);
                   },
-                  backgroundColor: Colors.grey[200],
-                  selectedColor: Colors.black87,
+                  backgroundColor: buttonColor,
+                  selectedColor: activeColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected ? Colors.black87 : Colors.grey[300]!,
+                      color: isSelected ? activeColor : Colors.grey[300]!,
                       width: 1,
                     ),
                   ),

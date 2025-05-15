@@ -45,12 +45,11 @@ dependencies:
   text_editor: ^0.7.0
   permission_handler: ^12.0.0+1
   image_gallery_saver: ^2.0.3
-
   flutter_bloc: ^9.1.0
   fpdart: ^1.1.1
   supabase_flutter: ^2.8.4
   get_it: ^8.0.3
-
+  equatable: ^2.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

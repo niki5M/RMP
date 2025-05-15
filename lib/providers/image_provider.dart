@@ -14,7 +14,6 @@ class AppImageProvider extends ChangeNotifier {
     _currentImage = image.readAsBytesSync();
     notifyListeners();
   }
-
   void changeImage(Uint8List image) {
     _currentImage = image;
     notifyListeners();

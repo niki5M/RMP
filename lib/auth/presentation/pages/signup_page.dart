@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:testik2/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:testik2/features/auth/presentation/bloc/auth_event.dart';
-import 'package:testik2/features/auth/presentation/bloc/auth_state.dart';
-import 'package:testik2/features/auth/presentation/pages/signup_page.dart';
-import 'package:testik2/features/auth/presentation/widgets/auth_button.dart';
-import 'package:testik2/features/auth/presentation/widgets/auth_field.dart';
+import 'package:testik2/core/utils/show_snackbar.dart';
 import '../../../../core/common/widgets/loader.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../../core/utils/show_snackbar.dart';
-import '../../../../screens/home_page.dart';
+import '../../../home/presentation/home_page.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
+import '../widgets/auth_button.dart';
+import '../widgets/auth_field.dart';
+import 'login_page.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-  static route() => MaterialPageRoute(builder: (context) => LoginPage());
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+  static route() => MaterialPageRoute(
+      builder: (context) => SignUpPage());
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   final formkey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final nameController = TextEditingController();
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
@@ -70,62 +73,56 @@ class _LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Text(
-                          'Sign In',
+                          'Регистрация',
                           style: TextStyle(
-                            color: Palete.greyBlackColor,
-                            fontSize: 50,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Palete.greyBlackColor,
+                              fontSize: 50,
+                              fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 20),
-                        AuthField(
-                          hintText: "Email",
-                          controller: emailController,
-                        ),
+                        AuthField(hintText: "Name", controller: nameController),
                         const SizedBox(height: 20),
                         AuthField(
-                          hintText: "Password",
-                          controller: passwordController,
-                          isObscureText: true,
-                        ),
+                            hintText: "Email", controller: emailController),
+                        const SizedBox(height: 20),
+                        AuthField(
+                            hintText: "Password",
+                            controller: passwordController,
+                            isObscureText: true),
                         const SizedBox(height: 20),
                         AuthButton(
-                          buttonText: 'Sign in',
+                          buttonText: 'Зарегистрироваться',
                           onPressed: () {
                             if (formkey.currentState!.validate()) {
-                              context.read<AuthBloc>().add(
-                                AuthLogin(
+                              context.read<AuthBloc>().add(AuthSignUp(
                                   email: emailController.text.trim(),
                                   password: passwordController.text.trim(),
-                                ),
-                              );
+                                  name: nameController.text.trim()));
                             }
                           },
                         ),
                         const SizedBox(height: 20),
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, SignUpPage.route());
+                            Navigator.push(context, LoginPage.route());
                           },
                           child: RichText(
                             text: TextSpan(
-                              text: "Don't have an account? ",
-                              style: Theme.of(context).textTheme.titleMedium,
-                              children: [
-                                TextSpan(
-                                  text: 'Sign up',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                    color: Palete.primaryOrange,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                                text: "Уже есть аккаунт? ",
+                                style: Theme.of(context).textTheme.titleMedium,
+                                children: [
+                                  TextSpan(
+                                    text: 'Войти',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                        color: Palete.primaryOrange,
+                                        fontWeight: FontWeight.bold),
+                                  )
+                                ]),
                           ),
-                        ),
+                        )
                       ],
                     ),
                   );

@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -7,6 +6,7 @@ import 'package:screenshot/screenshot.dart';
 import '../helper/tints.dart';
 import '../model/tint.dart';
 import '../providers/image_provider.dart' as app_image_provider;
+import '../core/theme/theme.dart';
 
 class TintScreen extends StatefulWidget {
   const TintScreen({super.key});
@@ -39,7 +39,7 @@ class _TintScreenState extends State<TintScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to save image')),
+          SnackBar(content: Text('Failed to save image: $e')),
         );
       }
     }
@@ -47,37 +47,45 @@ class _TintScreenState extends State<TintScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDark;
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final iconColor = isDark ? Colors.white : Colors.black;
+    final toolbarColor = isDark ? Colors.grey[900] : Colors.white;
+    final buttonColor = isDark ? Colors.grey[800] : Colors.grey[200];
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+          icon: Icon(Icons.arrow_back_ios, color: iconColor, size: 24),
           onPressed: () => Navigator.of(context).pushReplacementNamed('/edit'),
         ),
-        title: const Text(
+        title: Text(
           'Тинт',
           style: TextStyle(
             fontSize: 24,
-            color: Colors.black,
+            color: textColor,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.check, size: 24, color: Colors.black),
+            icon: Icon(Icons.check, size: 24, color: iconColor),
             onPressed: _saveImage,
           ),
         ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       body: Stack(
         children: [
           Center(
             child: Consumer<app_image_provider.AppImageProvider>(
               builder: (context, value, child) {
                 if (value.currentImage == null) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator(color: iconColor));
                 }
 
                 return Screenshot(
@@ -102,6 +110,9 @@ class _TintScreenState extends State<TintScreen> {
                   tints[selectedTintIndex].opacity = value;
                 });
               },
+              backgroundColor: toolbarColor!,
+              textColor: textColor,
+              activeColor: iconColor,
             ),
           ),
         ],
@@ -114,6 +125,9 @@ class _TintScreenState extends State<TintScreen> {
             selectedTintIndex = index;
           });
         },
+        backgroundColor: toolbarColor,
+        textColor: textColor,
+        buttonColor: buttonColor!,
       ),
     );
   }
@@ -122,10 +136,16 @@ class _TintScreenState extends State<TintScreen> {
 class _OpacitySlider extends StatelessWidget {
   final double opacity;
   final ValueChanged<double> onChanged;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color activeColor;
 
   const _OpacitySlider({
     required this.opacity,
     required this.onChanged,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.activeColor,
   });
 
   @override
@@ -134,7 +154,7 @@ class _OpacitySlider extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -149,9 +169,9 @@ class _OpacitySlider extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "Opacity",
-                style: TextStyle(color: Colors.black, fontSize: 16),
+              Text(
+                "Яркость",
+                style: TextStyle(color: textColor, fontSize: 16),
               ),
               Slider(
                 value: opacity,
@@ -159,7 +179,7 @@ class _OpacitySlider extends StatelessWidget {
                 max: 1.0,
                 divisions: 10,
                 label: opacity.toStringAsFixed(1),
-                activeColor: Colors.black,
+                activeColor: activeColor,
                 inactiveColor: Colors.grey,
                 onChanged: onChanged,
               ),
@@ -175,11 +195,17 @@ class _TintSelector extends StatelessWidget {
   final List<Tint> tints;
   final int selectedIndex;
   final ValueChanged<int> onTintSelected;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color buttonColor;
 
   const _TintSelector({
     required this.tints,
     required this.selectedIndex,
     required this.onTintSelected,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.buttonColor,
   });
 
   @override
@@ -187,7 +213,7 @@ class _TintSelector extends StatelessWidget {
     return Container(
       height: 150,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -205,10 +231,12 @@ class _TintSelector extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: tints.length,
         itemBuilder: (context, index) {
-          return _TintCircle(
+          return _TintCircleWidget(
             tint: tints[index],
             isSelected: index == selectedIndex,
             onTap: () => onTintSelected(index),
+            selectedColor: buttonColor,
+            textColor: textColor,
           );
         },
       ),
@@ -216,15 +244,19 @@ class _TintSelector extends StatelessWidget {
   }
 }
 
-class _TintCircle extends StatelessWidget {
+class _TintCircleWidget extends StatelessWidget {
   final Tint tint;
   final bool isSelected;
   final VoidCallback onTap;
+  final Color selectedColor;
+  final Color textColor;
 
-  const _TintCircle({
+  const _TintCircleWidget({
     required this.tint,
     required this.isSelected,
     required this.onTap,
+    required this.selectedColor,
+    required this.textColor,
   });
 
   @override
@@ -234,11 +266,13 @@ class _TintCircle extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: CircleAvatar(
-          backgroundColor: isSelected ? Colors.black87 : Colors.transparent,
+          radius: 24,
+          backgroundColor: isSelected ? selectedColor : Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.all(2),
             child: CircleAvatar(
               backgroundColor: tint.color,
+              radius: 20,
             ),
           ),
         ),
